@@ -41,9 +41,11 @@ class PhpunitExecutableFinder extends AbstractExecutableFinder
         $vendorPath = null;
         try {
             $composer = $this->findComposer();
-            $process = new Process(sprintf('%s %s', $composer, 'config bin-dir'));
+            $process = new Process(sprintf('%s %s', $composer, 'config bin-dir --absolute'));
             $process->run();
-            $vendorPath = realpath(trim($process->getOutput()));
+            $vendorPath = trim($process->getOutput());
+
+            fwrite(STDERR, 'COMPOSER VENDOR: ' . $composer . ', cwd: '. getcwd() . ' - ' . $vendorPath . PHP_EOL);
         } catch (RuntimeException $e) {
             $candidate = getcwd() . '/vendor/bin';
             if (file_exists($candidate)) {
@@ -51,7 +53,7 @@ class PhpunitExecutableFinder extends AbstractExecutableFinder
             }
         }
         if (!is_null($vendorPath)) {
-            var_dump($vendorPath);
+            fwrite(STDERR, 'VENDOR: ' . $vendorPath . PHP_EOL);
 
             putenv('PATH=' . $vendorPath . PATH_SEPARATOR . getenv('PATH'));
         }
